@@ -14,6 +14,35 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def send_tg_notification(message):
+    """发送Telegram通知"""
+    tg_bot_token = os.environ.get('TG_BOT_TOKEN')
+    tg_chat_id = os.environ.get('TG_CHAT_ID')
+    
+    if not tg_bot_token or not tg_chat_id:
+        logger.info("未配置Telegram通知参数，跳过通知")
+        return False
+    
+    try:
+        url = f"https://api.telegram.org/bot{tg_bot_token}/sendMessage"
+        data = {
+            "chat_id": tg_chat_id,
+            "text": message,
+            "parse_mode": "Markdown"
+        }
+        response = requests.post(url, data=data)
+        
+        if response.status_code == 200:
+            logger.info("Telegram通知发送成功")
+            return True
+        else:
+            logger.error(f"Telegram通知发送失败，状态码: {response.status_code}")
+            logger.error(f"响应内容: {response.text}")
+            return False
+    except Exception as e:
+        logger.error(f"发送Telegram通知时发生错误: {str(e)}")
+        return False
+
 def sign_in_single_user(username, password, domain):
     """单个用户的潮汐签到函数"""
     logger.info(f"开始处理用户: {username}")
@@ -95,7 +124,7 @@ def sign_in():
     
     if not usernames[0] or len(usernames) != len(passwords):
         logger.error("用户名或密码配置错误，请检查环境变量")
-        return False
+        return {"success": False, "success_count": 0, "total_users": 0}
     
     success_count = 0
     total_users = len(usernames)
@@ -108,7 +137,11 @@ def sign_in():
             success_count += 1
     
     logger.info(f"签到完成，成功: {success_count}/{total_users}")
-    return success_count > 0
+    return {
+        "success": success_count > 0,
+        "success_count": success_count,
+        "total_users": total_users
+    }
 
 if __name__ == "__main__":
     # 获取UTC时间并添加8小时得到北京时间
@@ -118,7 +151,19 @@ if __name__ == "__main__":
     logger.info(f"开始执行潮汐签到 - 北京时间: {beijing_time.strftime('%Y-%m-%d %H:%M:%S')}")
     
     result = sign_in()
-    if result:
+    
+    # 构建通知消息
+    if result["success"]:
+        status = "成功"
         logger.info("签到流程完成")
     else:
+        status = "失败"
         logger.error("签到流程失败")
+    
+    # 发送TG通知
+    message = f"*潮汐自动签到通知*\n\n" \
+              f"- 执行时间: {beijing_time.strftime('%Y-%m-%d %H:%M:%S')}\n" \
+              f"- 执行状态: {status}\n" \
+              f"- 签到结果: {result['success_count']}/{result['total_users']}\n"
+    
+    send_tg_notification(message)
