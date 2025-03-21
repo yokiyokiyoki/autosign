@@ -31,3 +31,12 @@ jobs:
         CHAOXI_DOMAIN: ${{ secrets.CHAOXI_DOMAIN }}
         TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
         TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        
+    - name: 清理工作流
+      uses: Mattraks/delete-workflow-runs@v2
+      with:
+        token: ${{ github.token }}
+        repository: ${{ github.repository }}
+        retain_days: 10
+        keep_minimum_runs: 6
+

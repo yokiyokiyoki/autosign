@@ -6,6 +6,7 @@ import requests
 import json
 import logging
 from datetime import datetime, timedelta
+from notification import send_notification
 
 # 配置日志
 logging.basicConfig(
@@ -13,35 +14,6 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-def send_tg_notification(message):
-    """发送Telegram通知"""
-    tg_bot_token = os.environ.get('TG_BOT_TOKEN')
-    tg_chat_id = os.environ.get('TG_CHAT_ID')
-    
-    if not tg_bot_token or not tg_chat_id:
-        logger.info("未配置Telegram通知参数，跳过通知")
-        return False
-    
-    try:
-        url = f"https://api.telegram.org/bot{tg_bot_token}/sendMessage"
-        data = {
-            "chat_id": tg_chat_id,
-            "text": message,
-            "parse_mode": "Markdown"
-        }
-        response = requests.post(url, data=data)
-        
-        if response.status_code == 200:
-            logger.info("Telegram通知发送成功")
-            return True
-        else:
-            logger.error(f"Telegram通知发送失败，状态码: {response.status_code}")
-            logger.error(f"响应内容: {response.text}")
-            return False
-    except Exception as e:
-        logger.error(f"发送Telegram通知时发生错误: {str(e)}")
-        return False
 
 def sign_in_single_user(username, password, domain):
     """单个用户的潮汐签到函数"""
@@ -160,10 +132,10 @@ if __name__ == "__main__":
         status = "失败"
         logger.error("签到流程失败")
     
-    # 发送TG通知
+    # 发送通知
     message = f"*潮汐自动签到通知*\n\n" \
               f"- 执行时间: {beijing_time.strftime('%Y-%m-%d %H:%M:%S')}\n" \
               f"- 执行状态: {status}\n" \
               f"- 签到结果: {result['success_count']}/{result['total_users']}\n"
     
-    send_tg_notification(message)
+    send_notification(message, notification_type='telegram')
