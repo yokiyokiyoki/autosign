@@ -9,7 +9,7 @@
 2. 在 Fork 后的仓库中添加以下 Secrets:
    - `CHAOXI_USERNAME`: 潮汐账号邮箱，多个账号用英文逗号分隔，如 `user1@example.com,user2@example.com`
    - `CHAOXI_PASSWORD`: 潮汐账号密码，与账号一一对应，如 `password1,password2`
-   - `CHAOXI_DOMAIN`: (可选) 潮汐网站域名，默认为 chaoxi.pro
+   - `CHAOXI_DOMAIN`: 潮汐网站IP，域名有CF墙
 3. GitHub Actions 将会按计划（每天北京时间9点）自动运行，也可以手动触发运行
 
 ### 方法二：本地运行

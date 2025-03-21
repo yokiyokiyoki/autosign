@@ -5,7 +5,7 @@ import os
 import requests
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # 配置日志
 logging.basicConfig(
@@ -111,7 +111,12 @@ def sign_in():
     return success_count > 0
 
 if __name__ == "__main__":
-    logger.info(f"开始执行潮汐签到 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    # 获取UTC时间并添加8小时得到北京时间
+    utc_time = datetime.utcnow()
+    beijing_time = utc_time + timedelta(hours=8)
+    
+    logger.info(f"开始执行潮汐签到 - 北京时间: {beijing_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    
     result = sign_in()
     if result:
         logger.info("签到流程完成")
