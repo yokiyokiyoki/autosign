@@ -31,7 +31,7 @@ jobs:
 
       - name: 打包 exe
         run: |
-          pyinstaller --noconfirm --clean --onefile --name generate_qr generate_qr.py
+          pyinstaller --noconfirm --clean --onefile --noconsole --name generate_qr generate_qr.py
 
       - name: 校验产物
         shell: pwsh
